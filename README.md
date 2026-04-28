@@ -7,6 +7,7 @@ K-Calculator 데이터·ML 노트북.
 | 파일 | 용도 |
 |------|------|
 | [`db-preprocessing/preprocessing.ipynb`](./db-preprocessing/preprocessing.ipynb) | 식약처 영양소 DB → 백엔드 적재용 형식으로 정제 |
+| [`db-preprocessing/pnds.ipynb`](./db-preprocessing/pnds.ipynb) | 결측치 처리 (옛 oneul-nutri/missing-value repo에서 흡수) |
 | [`data-preprocess-main.ipynb`](./data-preprocess-main.ipynb) | 탐색·실험용 스크래치패드 |
 
 ## 사용

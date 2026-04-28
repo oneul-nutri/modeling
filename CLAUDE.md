@@ -3,7 +3,10 @@
 ## Project Structure & Module Organization
 이 repo는 K-Calculator의 데이터·ML 노트북 모음.
 
-- `db-preprocessing/` — 식약처 영양소 DB 정제 (`preprocessing.ipynb` + `requirements.txt`). 백엔드에 적재할 형식으로 가공.
+- `db-preprocessing/` — 식약처 영양소 DB 정제. 백엔드에 적재할 형식으로 가공.
+  - `preprocessing.ipynb` — 메인 정제 파이프라인.
+  - `pnds.ipynb` — 결측치 처리 (옛 missing-value repo에서 흡수, 2026-04-28).
+  - `requirements.txt` — 두 노트북 공용 의존성.
 - `data-preprocess-main.ipynb` — 탐색용 스크래치패드.
 
 크롤링·YOLO 학습 파이프라인은 별도 repo([oneul-nutri/crawling](https://github.com/oneul-nutri/crawling))에 있다. 같은 워크스페이스에 sibling으로 clone하면 `../crawling/data/...` 등 상대경로로 참조 가능. modeling repo에는 submodule로 포함되지 않는다 (1인 운영 부담 절감 목적, 2026-04-28 분리).
