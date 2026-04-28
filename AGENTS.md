@@ -1,28 +1,35 @@
 # Repository Guidelines
 
 ## Project Structure & Module Organization
-Top-level work happens inside `food-calorie-vision-crawling/`, which houses automation scripts (`scripts/`), YOLO configs (`configs/`), lightweight checkpoints under `models/`, run outputs in `data/`, and label exports inside `labels/`. Database-to-markdown experiments live in `db-preprocessing/` (`preprocessing.ipynb`, CSV/MD folders), while `data-preprocess-main.ipynb` is a scratchpad for exploratory cleaning. Group raw crawls and assets by `run_id` (e.g., `data/raw/20250107_poc_a`) so filtering, labeling, and training stages stay aligned.
+이 repo는 K-Calculator의 데이터·ML 노트북 모음.
+
+- `db-preprocessing/` — 식약처 영양소 DB 정제 (`preprocessing.ipynb` + `requirements.txt`). 백엔드에 적재할 형식으로 가공.
+- `data-preprocess-main.ipynb` — 탐색용 스크래치패드.
+
+크롤링·YOLO 학습 파이프라인은 별도 repo([oneul-nutri/crawling](https://github.com/oneul-nutri/crawling))에 있다. 같은 워크스페이스에 sibling으로 clone하면 `../crawling/data/...` 등 상대경로로 참조 가능. modeling repo에는 submodule로 포함되지 않는다 (1인 운영 부담 절감 목적, 2026-04-28 분리).
 
 ## Build, Test, and Development Commands
-Use a dedicated Python environment per repo; install crawler/training deps and Playwright binaries before launching pipelines. The commands below cover the usual flow; adjust flags as needed but log every invocation.
+
 ```bash
-cd food-calorie-vision-crawling
+# db-preprocessing 노트북
+cd db-preprocessing
 python -m venv .venv && source .venv/bin/activate
-pip install -r requirements.txt && playwright install chromium
-UV_CACHE_DIR=.uv-cache uv run python scripts/crawl_images_playwright.py --run-id 20250107_poc_a --classes 기장 보리 조 --min_per_class 50 --max_per_class 80 --show-browser
-python scripts/dedup_filter.py --input data/raw/20250107_poc_a --output data/filtered/20250107_poc_a
-python scripts/prepare_food_dataset.py --run-id 20250107_poc_a --source labels/yolo_validated/20250107_poc_a --label-map food_class.csv --val-ratio 0.2
-UV_CACHE_DIR=.uv-cache uv run python scripts/train_yolo.py --run-id 20250107_poc_a --config configs/food_poc.yaml --model models/yolo11l.pt --device 0
+pip install -r requirements.txt
+jupyter lab preprocessing.ipynb
 ```
 
+크롤링·학습 작업은 [oneul-nutri/crawling](https://github.com/oneul-nutri/crawling) repo에서 진행.
+
 ## Coding Style & Naming Conventions
-Python sources follow PEP 8 (4-space indents, snake_case functions, UpperCamelCase classes) with type hints for new modules. Keep CLI entry points idempotent, fail fast on invalid paths, and surface JSON/CSV summaries in `data/meta/`. Reuse the `YYYYMMDD_stage_letter` scheme for run IDs across folders, commits, and stats. Markdown files should use UTF-8 and fenced code blocks for reproducible commands.
+Python 소스는 PEP 8 (4-space indents, snake_case functions, UpperCamelCase classes). 신규 모듈에는 타입 힌트. CLI 엔트리는 idempotent하게, 잘못된 경로엔 fail fast. JSON/CSV 요약은 `data/meta/`에 출력.
+
+노트북은 수정 시 사본을 만들고 Markdown 셀에 검증 단계를 기록.
 
 ## Testing Guidelines
-No formal unit suite exists yet, so lean on script-level guards: use `--dry-run` for crawlers, confirm `data/filtered/<run_id>/stats.yaml`, and run `python scripts/visualize_predictions.py --run-id <run_id> --top-n 2 --bottom-n 3` before packaging datasets. When editing notebooks, copy them and describe validation steps in Markdown cells.
+공식 unit 스위트 없음. 노트북 결과 검증은 출력 셀의 통계·시각화로 확인.
 
 ## Commit & Pull Request Guidelines
-Adopt the Conventional Commit prefixes visible in the log (`feat:`, `fix:`, `chore:`, etc.) and keep subjects under 72 characters. Each PR should describe the affected run IDs, key scripts executed, and attach metrics or screenshots (e.g., sample detections). Link related issues, list manual validation steps, and call out any follow-up tasks required for downstream teams.
+Conventional Commit prefix (`feat:`, `fix:`, `chore:`, `docs:`). 제목 72자 이하. PR 설명에 영향 받은 run ID, 실행 스크립트, 검증 단계, 후속 작업 명시.
 
 ## Security & Data Handling
-Never commit downloaded images, proprietary datasets, or secrets; only metadata and configs belong in git. Record licensing and provenance updates in `food-calorie-vision-crawling/data/source_list.md`, scrub credentials from notebooks, and rotate any API keys in your local environment rather than in the repository.
+다운로드 이미지·독점 데이터셋·시크릿은 절대 커밋 금지. 메타데이터·설정만 git에 포함. 노트북에서 자격증명 스크럽. API 키는 환경변수로만 처리, repo에는 두지 않는다.
